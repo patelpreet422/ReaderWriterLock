@@ -62,7 +62,7 @@ public class WriterPreferenceRWLock implements RWLock {
         --readerCount;
 
         if(readerCount == 0) {
-            condition.signal();
+            condition.signalAll();
         }
 
         mutex.unlock();

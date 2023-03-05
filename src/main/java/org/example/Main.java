@@ -1,8 +1,7 @@
 package org.example;
 
 import org.example.locks.RWLock;
-import org.example.locks.SemaphoreNoPreferenceRWLock;
-import org.example.locks.WriterPreferenceRWLock;
+import org.example.locks.NoPreferenceRWLock;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -11,7 +10,7 @@ public class Main {
     public static void main(String[] args) {
         final int[] cnt = {0};
 
-        RWLock rwLock = new WriterPreferenceRWLock();
+        RWLock rwLock = new NoPreferenceRWLock();
 
         List<Thread> threads = new ArrayList<>();
 
@@ -22,7 +21,7 @@ public class Main {
                 ++cnt[0];
                 System.out.printf("Writer %d, wrote value: %d\n", writerId, cnt[0]);
                 try {
-                    Thread.sleep(500);
+                    Thread.sleep(1000);
                 } catch (InterruptedException e) {
                     throw new RuntimeException(e);
                 }

@@ -1,19 +1,30 @@
 package org.example.locks;
 
-import org.example.locks.RWLock;
-
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
 
 public class NoPreferenceRWLock implements RWLock {
     final ReentrantLock mutex = new ReentrantLock();
-    final Condition readerCountIsZero = mutex.newCondition();
+
+    /*
+    here we if there are multiple thread waiting on a condition and condition.signalAll is invokes
+    then threads are invoked in FIFO order or whatever order condition variable maintains which is not knows to use
+    and hence in this implementation it is not knows who is given preference
+     */
+    final Condition condition = mutex.newCondition();
 
     long count = 0;
 
     @Override
     public void acquireReaderLock() {
         mutex.lock();
+        try {
+            while (count < 0) {
+                condition.await();
+            }
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
         ++count;
         mutex.unlock();
     }
@@ -24,7 +35,7 @@ public class NoPreferenceRWLock implements RWLock {
         --count;
 
         if(count == 0) {
-            readerCountIsZero.signal();
+            condition.signalAll();
         }
 
         mutex.unlock();
@@ -36,7 +47,7 @@ public class NoPreferenceRWLock implements RWLock {
 //        while(true) {
 //            mutex.lock();
 //            if (count == 0) {
-//                count = Integer.MAX_VALUE;
+//                count = -1;
 //                return;
 //            } else {
 //                mutex.unlock();
@@ -47,18 +58,20 @@ public class NoPreferenceRWLock implements RWLock {
         mutex.lock();
         try {
             while (count != 0) {
-                readerCountIsZero.await();
+                condition.await();
             }
-            count = Integer.MAX_VALUE;
+            count = -1;
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }
+        mutex.unlock();
     }
 
     @Override
     public void releaseWriterLock() {
+        mutex.lock();
         count = 0;
-        readerCountIsZero.signal();
+        condition.signalAll();
         mutex.unlock();
     }
 }
