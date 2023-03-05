@@ -1,7 +1,7 @@
 package org.example;
 
-import org.example.locks.NoPreferenceRWLock;
 import org.example.locks.RWLock;
+import org.example.locks.SemaphoreNoPreferenceRWLock;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -10,7 +10,7 @@ public class Main {
     public static void main(String[] args) {
         final int[] cnt = {0};
 
-        RWLock rwLock = new NoPreferenceRWLock();
+        RWLock rwLock = new SemaphoreNoPreferenceRWLock();
 
         List<Thread> threads = new ArrayList<>();
 
